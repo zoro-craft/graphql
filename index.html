@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zone01 Profile</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <h1 class="site-title">Zone01 Profile</h1>
+      <div id="header-logout" hidden></div>
+    </header>
+
+    <main class="site-main">
+      <div id="app-error" class="error-banner" role="alert" hidden></div>
+
+      <section id="login-view" class="view" hidden>
+        <!-- login form rendered by js/components/login-view.js -->
+      </section>
+
+      <section id="profile-view" class="view" hidden>
+        <section id="identification-section" class="profile-section identification"></section>
+        <section id="donut-section" class="profile-section" aria-labelledby="donut-title">
+          <h2 id="donut-title">Audit Results</h2>
+          <div id="donut-chart" class="chart-container"></div>
+        </section>
+        <section id="bar-section" class="profile-section" aria-labelledby="bar-title">
+          <h2 id="bar-title">XP per project</h2>
+          <div id="bar-chart" class="chart-container"></div>
+        </section>
+      </section>
+    </main>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
