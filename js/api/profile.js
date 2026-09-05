@@ -1,45 +1,43 @@
 import { graphql } from './graphql.js';
-import { byteToKB, projectName, safeValue } from '../utils/format.js';
+import { projectName, safeValue } from '../utils/format.js';
 
+// Everything the profile screen needs, fetched in a single request.
+// "#" lines are GraphQL comments and are ignored by the server.
 const PROFILE_QUERY = `
 {
   user {
     login
     avatarUrl
     auditRatio
+
+    # Sum of every XP transaction across all modules.
     xp: transactions_aggregate(
       where: { type: { _eq: "xp" }, event: { object: { type: { _eq: "module" } } } }
     ) {
-      aggregate {
-        sum {
-          amount
-        }
-      }
+      aggregate { sum { amount } }
     }
+
+    # Highest level reached.
     level: transactions_aggregate(
       where: { type: { _eq: "level" }, event: { object: { type: { _eq: "module" } } } }
     ) {
-      aggregate {
-        max {
-          amount
-        }
-      }
+      aggregate { max { amount } }
     }
+
+    # First cohort that has a label.
     cohort_number: events(where: { cohorts: { labelName: { _is_null: false } } }) {
-      cohorts {
-        labelName
-      }
+      cohorts { labelName }
     }
+
+    # Audit pass/fail counts, used by the donut chart.
     succeeded_audits: audits_aggregate(where: { closureType: { _eq: succeeded } }) {
-      aggregate {
-        count
-      }
+      aggregate { count }
     }
     failed_audits: audits_aggregate(where: { closureType: { _eq: failed } }) {
-      aggregate {
-        count
-      }
+      aggregate { count }
     }
+
+    # Per-project XP rows, sorted by the API and re-sorted in code.
     project_xp: transactions(
       where: { type: { _eq: "xp" }, object: { type: { _eq: "project" } }, event: { object: { name: { _eq: "Module" } } } }
       order_by: { amount: desc }
@@ -56,13 +54,14 @@ export async function fetchProfile() {
   if (!result.ok) {
     return result;
   }
-  let user = null;
-  if (result.data && result.data.user) {
-    user = result.data.user[0];
-  }
+
+  // The profile is the first (and only) row in the "user" collection.
+  const user = result.data && result.data.user ? result.data.user[0] : null;
   return { ok: true, user: user };
 }
 
+// Read an aggregate number (sum/max) from a GraphQL aggregate node,
+// or undefined when the value is missing or not a number.
 function aggregateValue(aggregateNode, key) {
   if (!aggregateNode || !aggregateNode.aggregate) return undefined;
   const holder = aggregateNode.aggregate[key];
@@ -73,6 +72,7 @@ function aggregateValue(aggregateNode, key) {
   return undefined;
 }
 
+// Read a count from a GraphQL aggregate node.
 function aggregateCount(aggregateNode) {
   if (!aggregateNode || !aggregateNode.aggregate) return undefined;
   const count = aggregateNode.aggregate.count;
@@ -82,13 +82,12 @@ function aggregateCount(aggregateNode) {
   return undefined;
 }
 
+// Find the first non-empty cohort label across the user's events.
 function firstCohortLabel(cohortNumber) {
   if (!Array.isArray(cohortNumber)) return undefined;
-  for (let i = 0; i < cohortNumber.length; i++) {
-    const event = cohortNumber[i];
+  for (const event of cohortNumber) {
     if (event && Array.isArray(event.cohorts)) {
-      for (let j = 0; j < event.cohorts.length; j++) {
-        const cohort = event.cohorts[j];
+      for (const cohort of event.cohorts) {
         if (cohort && typeof cohort.labelName === 'string' && cohort.labelName.trim() !== '') {
           return cohort.labelName;
         }
@@ -98,6 +97,7 @@ function firstCohortLabel(cohortNumber) {
   return undefined;
 }
 
+// Build the identification card. Any field the API could not provide shows as "-".
 export function mapIdentification(user) {
   let username = '-';
   let photo = '-';
@@ -111,72 +111,66 @@ export function mapIdentification(user) {
     photo = safeValue(user.avatarUrl);
     cohort = safeValue(firstCohortLabel(user.cohort_number));
     level = safeValue(aggregateValue(user.level, 'max'));
+
     const ratio = user.auditRatio;
     if (typeof ratio === 'number' && Number.isFinite(ratio)) {
-      auditRatio = Math.floor(ratio * 100) / 100;
+      auditRatio = ratio;
     }
-    const xpKB = byteToKB(aggregateValue(user.xp, 'sum'));
-    if (xpKB !== undefined) {
-      totalXp = Math.round(xpKB);
+
+    // Total XP is kept in raw bytes; formatting happens at render time.
+    const xp = aggregateValue(user.xp, 'sum');
+    if (xp !== undefined) {
+      totalXp = xp;
     }
   }
 
-  return {
-    username: username,
-    photo: photo,
-    cohort: cohort,
-    totalXp: totalXp,
-    level: level,
-    auditRatio: auditRatio
-  };
+  return { username, photo, cohort, totalXp, level, auditRatio };
 }
 
+// Build the data for the audit donut chart.
 export function mapDonut(user) {
-  let succeeded = undefined;
-  let failed = undefined;
+  let succeeded;
+  let failed;
   if (user) {
     succeeded = aggregateCount(user.succeeded_audits);
     failed = aggregateCount(user.failed_audits);
   }
 
+  // Only build segments when the API returned at least one count.
   const hasData = succeeded !== undefined || failed !== undefined;
-  const segments = [];
-  if (hasData) {
-    segments.push({ label: 'succeeded', value: succeeded || 0 });
-    segments.push({ label: 'failed', value: failed || 0 });
-  }
+  const segments = hasData
+    ? [
+        { label: 'succeeded', value: succeeded || 0 },
+        { label: 'failed', value: failed || 0 }
+      ]
+    : [];
 
-  return {
-    succeededCount: safeValue(succeeded),
-    failedCount: safeValue(failed),
-    segments: segments
-  };
+  return { succeededCount: safeValue(succeeded), failedCount: safeValue(failed), segments };
 }
 
+// Build the data for the XP bar chart: one entry per project,
+// sorted largest first and deduplicated by name.
 export function mapBar(user) {
   const projects = [];
+
   if (user && Array.isArray(user.project_xp)) {
-    for (let i = 0; i < user.project_xp.length; i++) {
-      const row = user.project_xp[i];
+    for (const row of user.project_xp) {
       const amount = row && row.amount;
-      if (typeof amount !== 'number' || !Number.isFinite(amount)) continue;
-      if (amount < 0) continue;
-      const xpKB = Math.floor((amount / 1000) * 10) / 10;
-      const name = projectName(row && row.path);
-      projects.push({ name: safeValue(name), xpKB: xpKB });
+      // Skip missing, non-numeric, or negative amounts.
+      if (typeof amount !== 'number' || !Number.isFinite(amount) || amount < 0) continue;
+      projects.push({ name: safeValue(projectName(row && row.path)), xp: amount });
     }
   }
-  projects.sort(function (a, b) {
-    return b.xpKB - a.xpKB;
-  });
 
+  projects.sort((a, b) => b.xp - a.xp);
+
+  const seenNames = new Set();
   const unique = [];
-  const seen = {};
-  for (let i = 0; i < projects.length; i++) {
-    const name = projects[i].name;
-    if (seen[name]) continue;
-    seen[name] = true;
-    unique.push(projects[i]);
+  for (const project of projects) {
+    if (seenNames.has(project.name)) continue;
+    seenNames.add(project.name);
+    unique.push(project);
   }
+
   return { projects: unique };
 }
