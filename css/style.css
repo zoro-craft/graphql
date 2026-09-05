@@ -67,6 +67,13 @@ small { font-size: 0.750rem; }
 .site-header {
   background-color: var(--primary);
   color: #ffffff;
+}
+
+/* Constrains the header content to the same width and padding as .site-main,
+   so the title and logout button line up with the page's grid columns. */
+.site-header-inner {
+  width: 90%;
+  margin: 0 auto;
   padding: 1rem 1.5rem;
   display: flex;
   align-items: center;
@@ -324,6 +331,11 @@ small { font-size: 0.750rem; }
 
 @media (max-width: 640px) {
   .site-main {
+    padding: 1rem;
+  }
+
+  /* Match the reduced .site-main padding so header content stays aligned. */
+  .site-header-inner {
     padding: 1rem;
   }
 
