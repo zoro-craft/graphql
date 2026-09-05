@@ -1,4 +1,4 @@
-// The signed-in user's JWT, persisted in localStorage under a single key.
+// The signed-in user's JWT, persisted in localStorage.
 const TOKEN_KEY = 'zone01-jwt';
 
 export function getToken() {

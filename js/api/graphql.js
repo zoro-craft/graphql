@@ -2,16 +2,7 @@ import { getToken, clearToken } from '../utils/token.js';
 
 const GRAPHQL_URL = 'https://learn.zone01oujda.ma/api/graphql-engine/v1/graphql';
 
-/**
- * Send a GraphQL query using the stored token.
- *
- * Returns { ok: true, data } on success, or { ok: false, reason } on failure,
- * where reason is one of:
- *   'auth'     - missing, expired, or invalid token,
- *   'network'  - the server could not be reached,
- *   'http'     - the server answered with a non-2xx status,
- *   'errors'   - the server returned GraphQL errors.
- */
+// Send a GraphQL query using the stored token.
 export async function graphql(query) {
   const token = getToken();
   if (!token) {

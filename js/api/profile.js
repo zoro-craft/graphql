@@ -2,7 +2,6 @@ import { graphql } from './graphql.js';
 import { projectName, safeValue } from '../utils/format.js';
 
 // Everything the profile screen needs, fetched in a single request.
-// "#" lines are GraphQL comments and are ignored by the server.
 const PROFILE_QUERY = `
 {
   user {
@@ -60,8 +59,7 @@ export async function fetchProfile() {
   return { ok: true, user: user };
 }
 
-// Read an aggregate number (sum/max) from a GraphQL aggregate node,
-// or undefined when the value is missing or not a number.
+// Read an aggregate number (sum/max) from a GraphQL aggregate node.
 function aggregateValue(aggregateNode, key) {
   if (!aggregateNode || !aggregateNode.aggregate) return undefined;
   const holder = aggregateNode.aggregate[key];
@@ -97,7 +95,7 @@ function firstCohortLabel(cohortNumber) {
   return undefined;
 }
 
-// Build the identification card. Any field the API could not provide shows as "-".
+// Build the identification card values.
 export function mapIdentification(user) {
   let username = '-';
   let photo = '-';
@@ -148,8 +146,7 @@ export function mapDonut(user) {
   return { succeededCount: safeValue(succeeded), failedCount: safeValue(failed), segments };
 }
 
-// Build the data for the XP bar chart: one entry per project,
-// sorted largest first and deduplicated by name.
+// Build the bar chart data (sorted, deduplicated).
 export function mapBar(user) {
   const projects = [];
 

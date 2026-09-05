@@ -2,9 +2,7 @@ import { clearToken } from '../utils/token.js';
 
 const SIGNIN_URL = 'https://learn.zone01oujda.ma/api/auth/signin';
 
-// Base64-encode a string that may contain any Unicode characters (Arabic, …).
-// btoa alone only handles Latin-1, so the string is first converted to UTF-8
-// bytes, then those bytes are encoded.
+// Base64-encode a string as UTF-8 so non-Latin characters work.
 function toBase64(value) {
   const bytes = new TextEncoder().encode(value);
   let binary = '';
@@ -14,14 +12,9 @@ function toBase64(value) {
   return btoa(binary);
 }
 
-/**
- * Authenticate with the API and receive a token.
- *
- * Returns { ok: true, token } on success, or { ok: false, reason } on failure,
- * where reason is 'unreachable' (network) or 'invalid' (bad credentials).
- */
+// Authenticate with the API and receive a token.
 export async function signin(identifier, password) {
-  // Basic auth header: "username:password" base64-encoded (UTF-8).
+  // Basic auth header from the credentials.
   const credentials = toBase64(identifier + ':' + password);
 
   let response;
@@ -42,7 +35,7 @@ export async function signin(identifier, password) {
     return { ok: false, reason: 'invalid' };
   }
 
-  // The token comes back as a quoted JSON string, e.g. "abc123"; strip the quotes.
+  // The token is returned as a quoted string; strip the quotes.
   let token = (await response.text()).trim();
   if (token[0] === '"' && token[token.length - 1] === '"') {
     token = token.slice(1, -1);

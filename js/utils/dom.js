@@ -1,15 +1,4 @@
-/**
- * Build an HTML element.
- *
- * @param {string} tag - element name, e.g. "div".
- * @param {object} [options]
- * @param {string} [options.className]  - CSS class(es) to apply.
- * @param {string} [options.text]       - text content.
- * @param {object} [options.attributes] - attribute name/value map.
- * @param {Node[]} [options.children]   - child nodes to append.
- * @param {object} [options.events]     - event name -> handler map.
- * @returns {Element}
- */
+// Build an HTML element from a tag and options.
 export function createElement(tag, options = {}) {
   const element = document.createElement(tag);
 

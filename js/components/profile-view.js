@@ -14,7 +14,7 @@ function identificationRow(termText, valueText) {
   });
 }
 
-// Total XP is a raw byte count; keep the dash when there is no value.
+// Total XP is a raw byte count; keep the dash when missing.
 function formatXp(value) {
   return value === '-' ? '-' : formatXP(value);
 }

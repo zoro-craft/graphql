@@ -23,7 +23,7 @@ export function renderBar(container, data) {
     (longest, project) => Math.max(longest, String(project.name).length),
     0
   );
-  // A -45° rotated label of length L drops roughly L * 0.7 below its anchor point.
+  // Reserve room below the plot for the rotated name labels.
   const labelDrop = Math.round(longestName * 7 * 0.7);
   const height = PADDING_TOP + PLOT_HEIGHT + 24 + labelDrop;
 

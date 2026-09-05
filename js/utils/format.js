@@ -1,10 +1,4 @@
-/**
- * Format a raw XP amount (in bytes) for display. The unit always follows the number.
- *   - more than 1000 KB -> rounded value in MB   (e.g. "1.5 MB")
- *   - 100 KB or more    -> rounded integer       (e.g. "101 KB")
- *   - 10 KB or more     -> one decimal           (e.g. "55.0 KB")
- *   - less than 10 KB   -> two decimals          (e.g. "9.00 KB")
- */
+// Format XP bytes into a readable value with a KB or MB unit.
 export function formatXP(bytes) {
   if (typeof bytes !== 'number' || !Number.isFinite(bytes)) return undefined;
 
@@ -18,7 +12,7 @@ export function formatXP(bytes) {
   return (Math.round(kb * 100) / 100).toFixed(2) + ' KB';
 }
 
-// Audit ratio rounded to one decimal, always showing that digit (e.g. "2.4").
+// Audit ratio rounded to one decimal.
 export function formatRatio(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return '-';
   return (Math.round(value * 10) / 10).toFixed(1);
@@ -31,7 +25,7 @@ export function projectName(path) {
   return segments[segments.length - 1];
 }
 
-// Replace missing or empty values with a dash so the UI never renders blanks.
+// Replace missing or empty values with a dash.
 export function safeValue(value) {
   if (value === undefined || value === null) return '-';
   if (typeof value === 'number' && !Number.isFinite(value)) return '-';
