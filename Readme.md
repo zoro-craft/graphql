@@ -58,23 +58,11 @@ Then visit `http://localhost:8080`.
 └── Readme.md
 ```
 
-## XP formatting
-
-All XP values (total and per-project) go through one function,
-`formatXP(bytes)`, which divides by 1000 and always appends the unit:
-
-| Value | Display |
-| --- | --- |
-| more than 1000 KB | rounded, in MB — e.g. `1.5 MB` |
-| 100 KB or more | rounded integer — e.g. `101 KB` |
-| 10 KB or more | one decimal — e.g. `55.0 KB` |
-| less than 10 KB | two decimals — e.g. `9.00 KB` |
 
 ## API endpoints
 
 - GraphQL: `https://learn.zone01oujda.ma/api/graphql-engine/v1/graphql`
 - Sign in: `https://learn.zone01oujda.ma/api/auth/signin`
-- GraphQL IDE: `https://learn.zone01oujda.ma/graphiql`
 
 ## Flows at a glance
 
@@ -83,6 +71,3 @@ All XP values (total and per-project) go through one function,
    functions shape the data for the identification card, donut, and bar chart.
 3. **Sign in** — form submit → `signin()` → store JWT → load profile.
 4. **Log out** — clear JWT → back to the login screen.
-
-For a detailed walkthrough of every flow, function signature, and data shape,
-see `ARCHITECTURE.md`.
