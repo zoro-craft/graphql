@@ -1,87 +1,100 @@
 import { signin } from '../api/signin.js';
 import { setToken } from '../utils/token.js';
+import { createElement } from '../utils/dom.js';
 
+// Friendly messages for each sign-in failure reason.
 const ERROR_MESSAGES = {
-  invalid: 'Invalid credentials. Please check your username or email and password.',
-  unreachable: 'Cannot reach the server. Check your connection and try again.'
+  invalid:
+    'Invalid credentials. Please check your username or email and password.',
+  unreachable: 'Cannot reach the server. Check your connection and try again.',
 };
 
 export function renderLoginView(container, options) {
   container.textContent = '';
 
-  const form = document.createElement('form');
-  form.className = 'login-form';
-  form.noValidate = true;
-
-  const title = document.createElement('h2');
-  title.textContent = 'Sign in';
-  form.append(title);
-
-  const identifierLabel = document.createElement('label');
-  identifierLabel.textContent = 'Username or email';
-  identifierLabel.htmlFor = 'login-identifier';
-  form.append(identifierLabel);
-
-  const identifier = document.createElement('input');
-  identifier.id = 'login-identifier';
-  identifier.name = 'identifier';
-  identifier.type = 'text';
-  identifier.autocomplete = 'username';
+  const identifier = createElement('input', {
+    attributes: {
+      id: 'login-identifier',
+      name: 'identifier',
+      type: 'text',
+      autocomplete: 'username',
+    },
+  });
   identifier.required = true;
-  form.append(identifier);
 
-  const passwordLabel = document.createElement('label');
-  passwordLabel.textContent = 'Password';
-  passwordLabel.htmlFor = 'login-password';
-  form.append(passwordLabel);
-
-  const password = document.createElement('input');
-  password.id = 'login-password';
-  password.name = 'password';
-  password.type = 'password';
-  password.autocomplete = 'current-password';
+  const password = createElement('input', {
+    attributes: {
+      id: 'login-password',
+      name: 'password',
+      type: 'password',
+      autocomplete: 'current-password',
+    },
+  });
   password.required = true;
-  form.append(password);
 
-  const error = document.createElement('p');
-  error.className = 'login-error';
+  // Inline error message, hidden until the form needs it.
+  const error = createElement('p', {
+    className: 'login-error',
+    attributes: { role: 'alert' },
+  });
   error.hidden = true;
-  error.setAttribute('role', 'alert');
-  form.append(error);
 
-  const submit = document.createElement('button');
-  submit.type = 'submit';
-  submit.textContent = 'Sign in';
-  form.append(submit);
+  const submit = createElement('button', {
+    attributes: { type: 'submit' },
+    text: 'Sign in',
+  });
 
-  form.addEventListener('submit', async function (event) {
+  const form = createElement('form', {
+    className: 'login-form',
+    attributes: { novalidate: '' },
+    children: [
+      createElement('h2', { text: 'Sign in' }),
+      createElement('label', {
+        attributes: { for: 'login-identifier' },
+        text: 'Username or email',
+      }),
+      identifier,
+      createElement('label', {
+        attributes: { for: 'login-password' },
+        text: 'Password',
+      }),
+      password,
+      error,
+      submit,
+    ],
+  });
+
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     error.hidden = true;
-    submit.disabled = true;
 
     const identifierValue = identifier.value.trim();
     const passwordValue = password.value;
 
+    // Require both fields before contacting the server.
     if (!identifierValue || !passwordValue) {
       showFormError('Please fill in both fields.');
-      submit.disabled = false;
       return;
     }
 
+    // Disable the button while the request is in flight so it cannot be sent twice.
+    submit.disabled = true;
     const result = await signin(identifierValue, passwordValue);
+    submit.disabled = false;
+
     if (result.ok) {
       setToken(result.token);
-      submit.disabled = false;
       options.onAuthenticated();
     } else {
-      const message = ERROR_MESSAGES[result.reason] || 'Sign-in failed. Please try again.';
-      showFormError(message);
-      submit.disabled = false;
+      showFormError(
+        ERROR_MESSAGES[result.reason] || 'Sign-in failed. Please try again.',
+      );
     }
   });
 
   container.append(form);
 
+  // Show an error and put focus back on the first field.
   function showFormError(message) {
     error.textContent = message;
     error.hidden = false;
