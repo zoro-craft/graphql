@@ -1,8 +1,18 @@
 import { getToken, clearToken } from './utils/token.js';
 import { renderLoginView } from './components/login-view.js';
-import { renderProfileView, renderLogoutButton } from './components/profile-view.js';
-import { fetchProfile, mapIdentification, mapDonut, mapBar } from './api/profile.js';
+import {
+  renderProfileView,
+  renderLogoutButton,
+} from './components/profile-view.js';
+import {
+  fetchProfile,
+  mapIdentification,
+  mapDonut,
+  mapBar,
+} from './api/profile.js';
+import { showEmptyState } from './utils/dom.js';
 
+// All the DOM containers the app writes into.
 const loginView = document.getElementById('login-view');
 const profileView = document.getElementById('profile-view');
 const logoutContainer = document.getElementById('header-logout');
@@ -11,6 +21,10 @@ const errorBanner = document.getElementById('app-error');
 const identificationSection = document.getElementById('identification-section');
 const donutContainer = document.getElementById('donut-chart');
 const barContainer = document.getElementById('bar-chart');
+
+// Shown whenever the stored token is missing, expired, or invalid.
+const SESSION_EXPIRED_MESSAGE =
+  'Your session has expired. Please sign in again.';
 
 function showError(message) {
   errorBanner.textContent = message;
@@ -22,6 +36,7 @@ function hideError() {
   errorBanner.hidden = true;
 }
 
+// Switch to the login screen, optionally showing an error above it.
 function showLogin(message) {
   hideError();
   profileView.hidden = true;
@@ -30,6 +45,7 @@ function showLogin(message) {
   if (message) showError(message);
 }
 
+// Switch to the profile screen.
 function showProfile() {
   hideError();
   loginView.hidden = true;
@@ -41,68 +57,67 @@ function handleLogout() {
   showLogin();
 }
 
-function setSectionState(container, message) {
-  container.textContent = '';
-  const state = document.createElement('p');
-  state.className = 'state-message';
-  state.textContent = message;
-  container.append(state);
-}
-
+// Show a "Loading…" placeholder in every profile section.
 function renderLoadingStates() {
-  setSectionState(identificationSection, 'Loading…');
-  setSectionState(donutContainer, 'Loading…');
-  setSectionState(barContainer, 'Loading…');
+  showEmptyState(identificationSection, 'Loading…');
+  showEmptyState(donutContainer, 'Loading…');
+  showEmptyState(barContainer, 'Loading…');
 }
 
-function renderFallbackProfile() {
-  renderProfileView(identificationSection, {
-    identification: mapIdentification(null),
-    donut: mapDonut(null),
-    bar: mapBar(null),
+// Assemble the profile screen from already-mapped data.
+function renderProfile(user) {
+  renderProfileView({
+    identificationSection: identificationSection,
     donutContainer: donutContainer,
-    barContainer: barContainer
+    barContainer: barContainer,
+    identification: mapIdentification(user),
+    donut: mapDonut(user),
+    bar: mapBar(user),
   });
+}
+
+// Keep the profile layout visible with empty data after an error.
+function renderFallbackProfile() {
+  renderProfile(null);
 }
 
 async function loadProfile() {
   renderLoadingStates();
 
   const result = await fetchProfile();
+
+  // Expired or invalid session: return to the login screen.
   if (result.reason === 'auth') {
     clearToken();
-    showLogin('Your session has expired. Please sign in again.');
+    showLogin(SESSION_EXPIRED_MESSAGE);
     return;
   }
+
+  // Any other failure: show an error but keep the (empty) profile visible.
   if (!result.ok) {
     showError('Could not load profile data. Please try again.');
     renderFallbackProfile();
     return;
   }
 
-  const user = result.user;
-  renderProfileView(identificationSection, {
-    identification: mapIdentification(user),
-    donut: mapDonut(user),
-    bar: mapBar(user),
-    donutContainer: donutContainer,
-    barContainer: barContainer
-  });
+  renderProfile(result.user);
   renderLogoutButton(logoutContainer, handleLogout);
 }
 
 export function boot() {
   renderLoginView(loginView, {
-    onAuthenticated: function () {
+    onAuthenticated() {
       showProfile();
       loadProfile();
-    }
+    },
   });
 
+  // A stored token means the user is already signed in.
   if (getToken()) {
     showProfile();
     loadProfile();
   } else {
-    showLogin();
+    // No token at all (e.g. it was deleted) is treated like an expired session.
+    showLogin(SESSION_EXPIRED_MESSAGE);
   }
 }
