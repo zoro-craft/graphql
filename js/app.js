@@ -117,7 +117,7 @@ export function boot() {
     showProfile();
     loadProfile();
   } else {
-    // A missing token is treated like an expired session.
-    showLogin(SESSION_EXPIRED_MESSAGE);
+    // No token (e.g. first visit): show a clean login screen.
+    showLogin();
   }
 }
