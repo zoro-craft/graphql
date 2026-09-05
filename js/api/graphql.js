@@ -2,6 +2,16 @@ import { getToken, clearToken } from '../utils/token.js';
 
 const GRAPHQL_URL = 'https://learn.zone01oujda.ma/api/graphql-engine/v1/graphql';
 
+/**
+ * Send a GraphQL query using the stored token.
+ *
+ * Returns { ok: true, data } on success, or { ok: false, reason } on failure,
+ * where reason is one of:
+ *   'auth'     - missing, expired, or invalid token,
+ *   'network'  - the server could not be reached,
+ *   'http'     - the server answered with a non-2xx status,
+ *   'errors'   - the server returned GraphQL errors.
+ */
 export async function graphql(query) {
   const token = getToken();
   if (!token) {
@@ -23,6 +33,7 @@ export async function graphql(query) {
     return { ok: false, reason: 'network' };
   }
 
+  // A 401 means the token is no longer accepted by the server.
   if (response.status === 401) {
     clearToken();
     return { ok: false, reason: 'auth' };
@@ -33,6 +44,8 @@ export async function graphql(query) {
   }
 
   const payload = await response.json();
+
+  // GraphQL reports application errors in an "errors" array even on HTTP 200.
   if (payload.errors && payload.errors.length > 0) {
     if (hasInvalidJwtError(payload.errors)) {
       clearToken();
@@ -44,12 +57,10 @@ export async function graphql(query) {
   return { ok: true, data: payload.data };
 }
 
+// True when any of the GraphQL errors reports an expired/invalid token.
 function hasInvalidJwtError(errors) {
-  for (let i = 0; i < errors.length; i++) {
-    const extension = errors[i].extensions;
-    if (extension && extension.code === 'invalid-jwt') {
-      return true;
-    }
-  }
-  return false;
+  return errors.some((error) => {
+    const extension = error.extensions;
+    return extension && extension.code === 'invalid-jwt';
+  });
 }
