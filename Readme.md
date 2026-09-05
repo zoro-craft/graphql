@@ -4,6 +4,8 @@ A single-page web app that shows a signed-in user's Zone01 profile: identity,
 audit results, and XP per project — all rendered with hand-built SVG charts,
 no charting library.
 
+**Live:** hosted at <https://graphql.elmehdirezoug.dev/>
+
 ## Features
 
 - **Sign in** with username/email + password via the Zone01 auth API.
