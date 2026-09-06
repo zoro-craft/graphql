@@ -55,15 +55,13 @@ export async function fetchProfile() {
   }
 
   // The profile is the first (and only) row in the "user" collection.
-  const user = result.data && result.data.user ? result.data.user[0] : null;
+  const user = result.data?.user?.[0] ?? null;
   return { ok: true, user: user };
 }
 
 // Read an aggregate number (sum/max) from a GraphQL aggregate node.
 function aggregateValue(aggregateNode, key) {
-  if (!aggregateNode || !aggregateNode.aggregate) return undefined;
-  const holder = aggregateNode.aggregate[key];
-  const amount = holder && holder.amount;
+  const amount = aggregateNode?.aggregate?.[key]?.amount;
   if (typeof amount === 'number' && Number.isFinite(amount)) {
     return amount;
   }
@@ -72,8 +70,7 @@ function aggregateValue(aggregateNode, key) {
 
 // Read a count from a GraphQL aggregate node.
 function aggregateCount(aggregateNode) {
-  if (!aggregateNode || !aggregateNode.aggregate) return undefined;
-  const count = aggregateNode.aggregate.count;
+  const count = aggregateNode?.aggregate?.count;
   if (typeof count === 'number' && Number.isFinite(count)) {
     return count;
   }
@@ -84,9 +81,9 @@ function aggregateCount(aggregateNode) {
 function firstCohortLabel(cohortNumber) {
   if (!Array.isArray(cohortNumber)) return undefined;
   for (const event of cohortNumber) {
-    if (event && Array.isArray(event.cohorts)) {
+    if (event?.cohorts) {
       for (const cohort of event.cohorts) {
-        if (cohort && typeof cohort.labelName === 'string' && cohort.labelName.trim() !== '') {
+        if (cohort?.labelName && typeof cohort.labelName === 'string' && cohort.labelName.trim() !== '') {
           return cohort.labelName;
         }
       }
@@ -152,10 +149,10 @@ export function mapBar(user) {
 
   if (user && Array.isArray(user.project_xp)) {
     for (const row of user.project_xp) {
-      const amount = row && row.amount;
+      const amount = row?.amount;
       // Skip missing, non-numeric, or negative amounts.
       if (typeof amount !== 'number' || !Number.isFinite(amount) || amount < 0) continue;
-      projects.push({ name: safeValue(projectName(row && row.path)), xp: amount });
+      projects.push({ name: safeValue(projectName(row?.path)), xp: amount });
     }
   }
 

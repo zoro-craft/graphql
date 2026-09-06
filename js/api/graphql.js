@@ -51,7 +51,6 @@ export async function graphql(query) {
 // True when any of the GraphQL errors reports an expired/invalid token.
 function hasInvalidJwtError(errors) {
   return errors.some((error) => {
-    const extension = error.extensions;
-    return extension && extension.code === 'invalid-jwt';
+    return error.extensions?.code === 'invalid-jwt';
   });
 }
