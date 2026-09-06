@@ -1,9 +1,1 @@
-.agents/
-.claude/
-.opencode/
-.specify/
-skills-lock.json
-
-**/skills/
-
 **/*.md
