@@ -15,6 +15,9 @@ no charting library.
 - **XP bar chart** — XP earned per project, largest first.
 - **Session handling** — the JWT is stored in `localStorage`; missing, expired,
   or invalid tokens return you to the login screen with a clear message.
+- **Privacy on logout** — logging out or an expired session wipes the profile
+  from the page, so no signed-in data (avatar, cohort, XP, charts) can be
+  revealed from the browser console afterwards.
 
 ## Tech stack
 
@@ -72,4 +75,4 @@ Then visit `http://localhost:8080`.
 2. **Profile load** — one GraphQL query fetches everything; three mapper
    functions shape the data for the identification card, donut, and bar chart.
 3. **Sign in** — form submit → `signin()` → store JWT → load profile.
-4. **Log out** — clear JWT → back to the login screen.
+4. **Log out** — clear JWT, purge profile data → back to the login screen.

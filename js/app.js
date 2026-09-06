@@ -36,9 +36,19 @@ function hideError() {
   errorBanner.hidden = true;
 }
 
+// Wipe every rendered profile section from the DOM so no signed-in data
+// (avatar, cohort, XP, charts) can survive into a logged-out state.
+function clearProfile() {
+  for (const container of [identificationSection, donutContainer, barContainer]) {
+    container.textContent = '';
+  }
+}
+
 // Switch to the login screen, optionally showing an error above it.
+// Always purges the profile so private data cannot be revealed while logged out.
 function showLogin(message) {
   hideError();
+  clearProfile();
   profileView.hidden = true;
   logoutContainer.hidden = true;
   loginView.hidden = false;
