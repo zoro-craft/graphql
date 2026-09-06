@@ -32,8 +32,8 @@ export function renderDonut(container, data) {
     return;
   }
 
-  const succeeded = segments[0] ? segments[0].value || 0 : 0;
-  const failed = segments[1] ? segments[1].value || 0 : 0;
+  const succeeded = segments[0].value || 0;
+  const failed = segments[1].value || 0;
 
   // Each ring covers a fraction of the circumference proportional to its share.
   const radius = 80;
@@ -73,8 +73,8 @@ export function renderDonut(container, data) {
   const legend = createElement('div', {
     className: 'chart-legend',
     children: [
-      legendItem('succeeded', data.succeededCount, percentOf(succeeded, total), 'legend-swatch-succeeded'),
-      legendItem('failed', data.failedCount, percentOf(failed, total), 'legend-swatch-failed')
+      legendItem('succeeded', succeeded, percentOf(succeeded, total), 'legend-swatch-succeeded'),
+      legendItem('failed', failed, percentOf(failed, total), 'legend-swatch-failed')
     ]
   });
 

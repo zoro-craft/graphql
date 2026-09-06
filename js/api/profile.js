@@ -140,7 +140,7 @@ export function mapDonut(user) {
       ]
     : [];
 
-  return { succeededCount: safeValue(succeeded), failedCount: safeValue(failed), segments };
+  return { segments };
 }
 
 // Build the bar chart data (sorted, deduplicated).
