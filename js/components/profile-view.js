@@ -3,7 +3,7 @@ import { renderBar } from './bar-chart.js';
 import { createElement } from '../utils/dom.js';
 import { formatRatio, formatXP } from '../utils/format.js';
 
-// One labeled row inside the identification card.
+// one labeled row inside the identification card.
 function identificationRow(termText, valueText) {
   return createElement('div', {
     className: 'identification-row',
@@ -14,7 +14,7 @@ function identificationRow(termText, valueText) {
   });
 }
 
-// Total XP is a raw byte count; keep the dash when missing.
+// total xp is a raw byte count; keep the dash when missing.
 function formatXp(value) {
   return value === '-' ? '-' : formatXP(value);
 }
@@ -22,7 +22,7 @@ function formatXp(value) {
 function renderIdentification(container, data) {
   container.textContent = '';
 
-  // Show the avatar only when the API returned a photo.
+  // show the avatar only when the api returned a photo.
   if (data.photo && data.photo !== '-') {
     const avatar = createElement('img', {
       className: 'avatar',
@@ -58,7 +58,7 @@ export function renderLogoutButton(container, onLogout) {
   container.hidden = false;
 }
 
-// Render every section of the profile screen.
+// render every section of the profile screen.
 export function renderProfileView(options) {
   renderIdentification(options.identificationSection, options.identification);
   renderDonut(options.donutContainer, options.donut);

@@ -1,4 +1,4 @@
-// Format XP bytes into a readable value with a KB or MB unit.
+// format xp bytes into a readable value with a kb or mb unit.
 export function formatXP(bytes) {
   if (typeof bytes !== 'number' || !Number.isFinite(bytes)) return undefined;
 
@@ -12,20 +12,20 @@ export function formatXP(bytes) {
   return (Math.round(kb * 100) / 100).toFixed(2) + ' KB';
 }
 
-// Audit ratio rounded to one decimal.
+// audit ratio rounded to one decimal.
 export function formatRatio(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) return '-';
   return (Math.round(value * 10) / 10).toFixed(1);
 }
 
-// Last segment of a project path, used as the project's display name.
+// last segment of a project path, used as the project's display name.
 export function projectName(path) {
   if (typeof path !== 'string' || path === '') return undefined;
   const segments = path.split('/');
   return segments[segments.length - 1];
 }
 
-// Replace missing or empty values with a dash.
+// replace missing or empty values with a dash.
 export function safeValue(value) {
   if (value === undefined || value === null) return '-';
   if (typeof value === 'number' && !Number.isFinite(value)) return '-';

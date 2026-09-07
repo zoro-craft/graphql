@@ -1,7 +1,7 @@
 import { graphql } from './graphql.js';
 import { projectName, safeValue } from '../utils/format.js';
 
-// Everything the profile screen needs, fetched in a single request.
+// everything the profile screen needs, fetched in a single request.
 const PROFILE_QUERY = `
 {
   user {
@@ -54,12 +54,12 @@ export async function fetchProfile() {
     return result;
   }
 
-  // The profile is the first (and only) row in the "user" collection.
+  // the profile is the first (and only) row in the "user" collection.
   const user = result.data?.user?.[0] ?? null;
   return { ok: true, user: user };
 }
 
-// Read an aggregate number (sum/max) from a GraphQL aggregate node.
+// read an aggregate number (sum/max) from a graphql aggregate node.
 function aggregateValue(aggregateNode, key) {
   const amount = aggregateNode?.aggregate?.[key]?.amount;
   if (typeof amount === 'number' && Number.isFinite(amount)) {
@@ -68,7 +68,7 @@ function aggregateValue(aggregateNode, key) {
   return undefined;
 }
 
-// Read a count from a GraphQL aggregate node.
+// read a count from a graphql aggregate node.
 function aggregateCount(aggregateNode) {
   const count = aggregateNode?.aggregate?.count;
   if (typeof count === 'number' && Number.isFinite(count)) {
@@ -77,7 +77,7 @@ function aggregateCount(aggregateNode) {
   return undefined;
 }
 
-// Find the first non-empty cohort label across the user's events.
+// find the first non-empty cohort label across the user's events.
 function firstCohortLabel(cohortNumber) {
   if (!Array.isArray(cohortNumber)) return undefined;
   for (const event of cohortNumber) {
@@ -92,7 +92,7 @@ function firstCohortLabel(cohortNumber) {
   return undefined;
 }
 
-// Build the identification card values.
+// build the identification card values.
 export function mapIdentification(user) {
   let username = '-';
   let photo = '-';
@@ -112,7 +112,7 @@ export function mapIdentification(user) {
       auditRatio = ratio;
     }
 
-    // Total XP is kept in raw bytes; formatting happens at render time.
+    // total xp is kept in raw bytes; formatting happens at render time.
     const xp = aggregateValue(user.xp, 'sum');
     if (xp !== undefined) {
       totalXp = xp;
@@ -122,7 +122,7 @@ export function mapIdentification(user) {
   return { username, photo, cohort, totalXp, level, auditRatio };
 }
 
-// Build the data for the audit donut chart.
+// build the data for the audit donut chart.
 export function mapDonut(user) {
   let succeeded;
   let failed;
@@ -131,7 +131,7 @@ export function mapDonut(user) {
     failed = aggregateCount(user.failed_audits);
   }
 
-  // Only build segments when the API returned at least one count.
+  // only build segments when the api returned at least one count.
   const hasData = succeeded !== undefined || failed !== undefined;
   const segments = hasData
     ? [
@@ -143,14 +143,14 @@ export function mapDonut(user) {
   return { segments };
 }
 
-// Build the bar chart data (sorted, deduplicated).
+// build the bar chart data (sorted, deduplicated).
 export function mapBar(user) {
   const projects = [];
 
   if (user && Array.isArray(user.project_xp)) {
     for (const row of user.project_xp) {
       const amount = row?.amount;
-      // Skip missing, non-numeric, or negative amounts.
+      // skip missing, non-numeric, or negative amounts.
       if (typeof amount !== 'number' || !Number.isFinite(amount) || amount < 0) continue;
       projects.push({ name: safeValue(projectName(row?.path)), xp: amount });
     }

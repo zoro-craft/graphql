@@ -12,7 +12,7 @@ import {
 } from './api/profile.js';
 import { showEmptyState } from './utils/dom.js';
 
-// All the DOM containers the app writes into.
+// all the dom containers the app writes into.
 const loginView = document.getElementById('login-view');
 const profileView = document.getElementById('profile-view');
 const logoutContainer = document.getElementById('header-logout');
@@ -22,7 +22,7 @@ const identificationSection = document.getElementById('identification-section');
 const donutContainer = document.getElementById('donut-chart');
 const barContainer = document.getElementById('bar-chart');
 
-// Shown whenever the stored token is missing, expired, or invalid.
+// shown whenever the stored token is missing, expired, or invalid.
 const SESSION_EXPIRED_MESSAGE =
   'Your session has expired. Please sign in again.';
 
@@ -36,16 +36,14 @@ function hideError() {
   errorBanner.hidden = true;
 }
 
-// Wipe every rendered profile section from the DOM so no signed-in data
-// (avatar, cohort, XP, charts) can survive into a logged-out state.
+// wipe every rendered profile section from the dom so no signed-in data survives into a logged-out state.
 function clearProfile() {
   for (const container of [identificationSection, donutContainer, barContainer]) {
     container.textContent = '';
   }
 }
 
-// Switch to the login screen, optionally showing an error above it.
-// Always purges the profile so private data cannot be revealed while logged out.
+// switch to the login screen, optionally showing an error above it; always purges the profile so private data cannot be revealed while logged out.
 function showLogin(message) {
   hideError();
   clearProfile();
@@ -55,7 +53,7 @@ function showLogin(message) {
   if (message) showError(message);
 }
 
-// Switch to the profile screen.
+// switch to the profile screen.
 function showProfile() {
   hideError();
   loginView.hidden = true;
@@ -67,14 +65,14 @@ function handleLogout() {
   showLogin();
 }
 
-// Show a "Loading…" placeholder in every profile section.
+// show a "loading…" placeholder in every profile section.
 function renderLoadingStates() {
   showEmptyState(identificationSection, 'Loading…');
   showEmptyState(donutContainer, 'Loading…');
   showEmptyState(barContainer, 'Loading…');
 }
 
-// Assemble the profile screen from already-mapped data.
+// assemble the profile screen from already-mapped data.
 function renderProfile(user) {
   renderProfileView({
     identificationSection: identificationSection,
@@ -86,7 +84,7 @@ function renderProfile(user) {
   });
 }
 
-// Keep the profile layout visible with empty data after an error.
+// keep the profile layout visible with empty data after an error.
 function renderFallbackProfile() {
   renderProfile(null);
 }
@@ -96,14 +94,14 @@ async function loadProfile() {
 
   const result = await fetchProfile();
 
-  // Expired or invalid session: return to the login screen.
+  // expired or invalid session: return to the login screen.
   if (result.reason === 'auth') {
     clearToken();
     showLogin(SESSION_EXPIRED_MESSAGE);
     return;
   }
 
-  // Any other failure: show an error but keep the (empty) profile visible.
+  // any other failure: show an error but keep the (empty) profile visible.
   if (!result.ok) {
     showError('Could not load profile data. Please try again.');
     renderFallbackProfile();
@@ -116,18 +114,18 @@ async function loadProfile() {
 
 export function boot() {
   renderLoginView(loginView, {
-    onAuthenticated() {
+    onAuthenticated: () => {
       showProfile();
       loadProfile();
     },
   });
 
-  // A stored token means the user is already signed in.
+  // a stored token means the user is already signed in.
   if (getToken()) {
     showProfile();
     loadProfile();
   } else {
-    // No token (e.g. first visit): show a clean login screen.
+    // no token (e.g. first visit): show a clean login screen.
     showLogin();
   }
 }

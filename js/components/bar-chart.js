@@ -2,12 +2,14 @@ import { svgElement } from '../utils/svg.js';
 import { showEmptyState } from '../utils/dom.js';
 import { formatXP } from '../utils/format.js';
 
-// Chart layout in SVG units. The viewBox scales the chart to fit any width.
-const WIDTH = 800;
-const PADDING_TOP = 44;
-const PADDING_RIGHT = 20;
-const PADDING_LEFT = 64;
-const PLOT_HEIGHT = 240;
+// the drawing area in viewBox units (the whole chart scales to the card): bars grow up from the baseline over PLOT_HEIGHT, TOP_ROOM holds their value labels, names hang below, and the y axis + its "0" live in the AXIS_GUTTER.
+
+const SVG_WIDTH = 800;
+const AXIS_GUTTER = 64; // left strip that holds the y axis and the "0" label
+const RIGHT_MARGIN = 20; // small air gap so the last bar is not flush to the edge
+const TOP_ROOM = 44; // headroom above the tallest bar, for its value label
+const PLOT_HEIGHT = 240; // vertical range the bars are drawn into
+const BOTTOM_PAD = 24; // fixed air under the axis line
 
 export function renderBar(container, data) {
   container.textContent = '';
@@ -18,59 +20,59 @@ export function renderBar(container, data) {
     return;
   }
 
-  // Room below the plot for the longest (rotated) project name.
+// name labels are tilted 45°, so each character of the longest name needs about 5 units of vertical room below the baseline (~7 wide x sin(45°)); reserve that for the chart height.
   const longestName = projects.reduce(
     (longest, project) => Math.max(longest, String(project.name).length),
     0
   );
-  // Reserve room below the plot for the rotated name labels.
-  const labelDrop = Math.round(longestName * 7 * 0.7);
-  const height = PADDING_TOP + PLOT_HEIGHT + 24 + labelDrop;
+  const nameDrop = Math.round(longestName * 5);
+  const height = TOP_ROOM + PLOT_HEIGHT + BOTTOM_PAD + nameDrop;
 
-  // The tallest bar defines the scale of the y axis.
+  // the tallest bar defines the scale of the y axis: it fills the whole plot height, and every other bar is sized proportionally to it.
   const maxXp = projects.reduce((max, project) => Math.max(max, project.xp), 0);
 
-  const plotWidth = WIDTH - PADDING_LEFT - PADDING_RIGHT;
+  const plotWidth = SVG_WIDTH - AXIS_GUTTER - RIGHT_MARGIN;
   const slotWidth = plotWidth / projects.length;
 
-  // Keep bars a reasonable size no matter how many projects there are.
+  // each bar occupies part of its own slot, never the whole slot, so neighbouring bars (and labels) keep a visible gap; capped at 48.
   const barWidth = Math.min(48, Math.max(4, slotWidth * 0.6));
 
-  const baseline = PADDING_TOP + PLOT_HEIGHT;
+  // the horizontal line that the bars grow up from.
+  const baseline = TOP_ROOM + PLOT_HEIGHT;
 
-  // Smaller font when there are many bars so the labels never collide.
+  // scale the label font with the slot width, clamped between 7 and 9, so labels stay readable but shrink when many narrow bars would crowd them.
   const fontSize = Math.max(7, Math.min(9, Math.floor(slotWidth * 0.35)));
 
   const svg = svgElement('svg', {
     class: 'bar-chart',
-    viewBox: '0 0 ' + WIDTH + ' ' + height,
+    viewBox: '0 0 ' + SVG_WIDTH + ' ' + height,
     role: 'img',
     'aria-label': 'Bar chart of XP earned per project'
   });
 
-  // Y axis, the vertical line on the left of the plot.
+  // y axis: the vertical line on the left edge of the plot.
   svg.append(
     svgElement('line', {
       class: 'chart-axis',
-      x1: PADDING_LEFT,
-      y1: PADDING_TOP,
-      x2: PADDING_LEFT,
+      x1: AXIS_GUTTER,
+      y1: TOP_ROOM,
+      x2: AXIS_GUTTER,
       y2: baseline
     }),
-    // X axis, the horizontal line along the bottom of the plot.
+    // x axis: the horizontal line along the bottom of the plot.
     svgElement('line', {
       class: 'chart-axis',
-      x1: PADDING_LEFT,
+      x1: AXIS_GUTTER,
       y1: baseline,
-      x2: WIDTH - PADDING_RIGHT,
+      x2: SVG_WIDTH - RIGHT_MARGIN,
       y2: baseline
     })
   );
 
-  // "0" label at the bottom of the y axis.
+  // "0" label at the foot of the y axis.
   const zeroLabel = svgElement('text', {
     class: 'axis-label',
-    x: PADDING_LEFT - 8,
+    x: AXIS_GUTTER - 8,
     y: baseline + 4,
     'text-anchor': 'end',
     'font-size': fontSize
@@ -80,11 +82,14 @@ export function renderBar(container, data) {
 
   for (let i = 0; i < projects.length; i++) {
     const project = projects[i];
-    const barCenterX = PADDING_LEFT + i * slotWidth + slotWidth / 2;
+
+    // horizontal middle of this bar's slot.
+    const barCenterX = AXIS_GUTTER + i * slotWidth + slotWidth / 2;
+    // bar height relative to the tallest bar, so xp = maxXp fills the plot.
     const barHeight = (project.xp / maxXp) * PLOT_HEIGHT;
     const barTop = baseline - barHeight;
 
-    // The bar itself, sized relative to the tallest project.
+    // the bar itself.
     svg.append(
       svgElement('rect', {
         class: 'bar-rect',
@@ -95,7 +100,7 @@ export function renderBar(container, data) {
       })
     );
 
-    // Value above the bar, formatted by the shared XP formatter.
+    // value shown just above the bar, formatted by the shared xp formatter, tilted 45° so it points along the bar.
     const valueLabel = svgElement('text', {
       class: 'bar-value',
       x: barCenterX,
@@ -107,7 +112,7 @@ export function renderBar(container, data) {
     valueLabel.textContent = formatXP(project.xp);
     svg.append(valueLabel);
 
-    // Project name below the bar.
+    // project name hanging below the axis, tilted so long names do not collide with their neighbours.
     const nameLabel = svgElement('text', {
       class: 'bar-label',
       x: barCenterX,

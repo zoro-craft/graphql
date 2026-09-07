@@ -1,4 +1,4 @@
-// Build an HTML element from a tag and options.
+// build an html element from a tag and options.
 export function createElement(tag, options = {}) {
   const element = document.createElement(tag);
 
@@ -20,7 +20,7 @@ export function createElement(tag, options = {}) {
   return element;
 }
 
-// Replace a container's content with a simple placeholder message.
+// replace a container's content with a simple placeholder message.
 export function showEmptyState(container, message) {
   container.textContent = '';
   container.append(createElement('p', { className: 'state-message', text: message }));

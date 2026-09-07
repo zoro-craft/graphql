@@ -2,7 +2,7 @@ import { signin } from '../api/signin.js';
 import { setToken } from '../utils/token.js';
 import { createElement } from '../utils/dom.js';
 
-// Friendly messages for each sign-in failure reason.
+// friendly messages for each sign-in failure reason.
 const ERROR_MESSAGES = {
   invalid:
     'Invalid credentials. Please check your username or email and password.',
@@ -32,7 +32,7 @@ export function renderLoginView(container, options) {
   });
   password.required = true;
 
-  // Inline error message, hidden until the form needs it.
+  // inline error message, hidden until the form needs it.
   const error = createElement('p', {
     className: 'login-error',
     attributes: { role: 'alert' },
@@ -71,13 +71,13 @@ export function renderLoginView(container, options) {
     const identifierValue = identifier.value.trim();
     const passwordValue = password.value;
 
-    // Require both fields before contacting the server.
+    // require both fields before contacting the server.
     if (!identifierValue || !passwordValue) {
       showFormError('Please fill in both fields.');
       return;
     }
 
-    // Disable the button while the request is in flight so it cannot be sent twice.
+    // disable the button while the request is in flight so it cannot be sent twice.
     submit.disabled = true;
     const result = await signin(identifierValue, passwordValue);
     submit.disabled = false;
@@ -94,7 +94,7 @@ export function renderLoginView(container, options) {
 
   container.append(form);
 
-  // Show an error and put focus back on the first field.
+  // show an error and put focus back on the first field.
   function showFormError(message) {
     error.textContent = message;
     error.hidden = false;
