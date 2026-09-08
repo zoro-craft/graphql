@@ -20,7 +20,7 @@ export function createElement(tag, options = {}) {
   return element;
 }
 
-// replace a container's content with a simple placeholder message.
+// show a placeholder message in a container.
 export function showEmptyState(container, message) {
   container.textContent = '';
   container.append(createElement('p', { className: 'state-message', text: message }));

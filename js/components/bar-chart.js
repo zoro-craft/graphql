@@ -2,7 +2,7 @@ import { svgElement } from '../utils/svg.js';
 import { showEmptyState } from '../utils/dom.js';
 import { formatXP } from '../utils/format.js';
 
-// the drawing area in viewBox units (the whole chart scales to the card): bars grow up from the baseline over PLOT_HEIGHT, TOP_ROOM holds their value labels, names hang below, and the y axis + its "0" live in the AXIS_GUTTER.
+// the drawing area, in viewBox units.
 
 const SVG_WIDTH = 800;
 const AXIS_GUTTER = 64; // left strip that holds the y axis and the "0" label
@@ -20,27 +20,27 @@ export function renderBar(container, data) {
     return;
   }
 
-// name labels are tilted 45°, so each character of the longest name needs about 5 units of vertical room below the baseline (~7 wide x sin(45°)); reserve that for the chart height.
+// reserve room below the chart for the tilted name labels.
   const longestName = projects.reduce(
     (longest, project) => Math.max(longest, String(project.name).length),
     0
   );
-  const nameDrop = Math.round(longestName * 5);
+  const nameDrop = longestName * 5;
   const height = TOP_ROOM + PLOT_HEIGHT + BOTTOM_PAD + nameDrop;
 
-  // the tallest bar defines the scale of the y axis: it fills the whole plot height, and every other bar is sized proportionally to it.
+  // bars are sized relative to the tallest one.
   const maxXp = projects.reduce((max, project) => Math.max(max, project.xp), 0);
 
   const plotWidth = SVG_WIDTH - AXIS_GUTTER - RIGHT_MARGIN;
   const slotWidth = plotWidth / projects.length;
 
-  // each bar occupies part of its own slot, never the whole slot, so neighbouring bars (and labels) keep a visible gap; capped at 48.
+  // each bar takes part of its slot, capped at 48.
   const barWidth = Math.min(48, Math.max(4, slotWidth * 0.6));
 
   // the horizontal line that the bars grow up from.
   const baseline = TOP_ROOM + PLOT_HEIGHT;
 
-  // scale the label font with the slot width, clamped between 7 and 9, so labels stay readable but shrink when many narrow bars would crowd them.
+  // label font scales with slot width, clamped 7-9.
   const fontSize = Math.max(7, Math.min(9, Math.floor(slotWidth * 0.35)));
 
   const svg = svgElement('svg', {
@@ -85,7 +85,7 @@ export function renderBar(container, data) {
 
     // horizontal middle of this bar's slot.
     const barCenterX = AXIS_GUTTER + i * slotWidth + slotWidth / 2;
-    // bar height relative to the tallest bar, so xp = maxXp fills the plot.
+    // bar height relative to the tallest bar.
     const barHeight = (project.xp / maxXp) * PLOT_HEIGHT;
     const barTop = baseline - barHeight;
 
@@ -100,7 +100,7 @@ export function renderBar(container, data) {
       })
     );
 
-    // value shown just above the bar, formatted by the shared xp formatter, tilted 45° so it points along the bar.
+    // value above the bar, tilted 45°.
     const valueLabel = svgElement('text', {
       class: 'bar-value',
       x: barCenterX,
@@ -112,7 +112,7 @@ export function renderBar(container, data) {
     valueLabel.textContent = formatXP(project.xp);
     svg.append(valueLabel);
 
-    // project name hanging below the axis, tilted so long names do not collide with their neighbours.
+    // tilted project name below the bar.
     const nameLabel = svgElement('text', {
       class: 'bar-label',
       x: barCenterX,

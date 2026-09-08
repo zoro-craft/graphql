@@ -77,7 +77,7 @@ export function renderLoginView(container, options) {
       return;
     }
 
-    // disable the button while the request is in flight so it cannot be sent twice.
+    // disable the button while the request is in flight.
     submit.disabled = true;
     const result = await signin(identifierValue, passwordValue);
     submit.disabled = false;

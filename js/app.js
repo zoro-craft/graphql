@@ -22,7 +22,7 @@ const identificationSection = document.getElementById('identification-section');
 const donutContainer = document.getElementById('donut-chart');
 const barContainer = document.getElementById('bar-chart');
 
-// shown whenever the stored token is missing, expired, or invalid.
+// shown when the stored token is invalid.
 const SESSION_EXPIRED_MESSAGE =
   'Your session has expired. Please sign in again.';
 
@@ -36,14 +36,14 @@ function hideError() {
   errorBanner.hidden = true;
 }
 
-// wipe every rendered profile section from the dom so no signed-in data survives into a logged-out state.
+// wipe the profile so no signed-in data survives logout.
 function clearProfile() {
   for (const container of [identificationSection, donutContainer, barContainer]) {
     container.textContent = '';
   }
 }
 
-// switch to the login screen, optionally showing an error above it; always purges the profile so private data cannot be revealed while logged out.
+// switch to login (optional error) and purge the profile.
 function showLogin(message) {
   hideError();
   clearProfile();
@@ -84,7 +84,7 @@ function renderProfile(user) {
   });
 }
 
-// keep the profile layout visible with empty data after an error.
+// keep the profile visible (empty) after an error.
 function renderFallbackProfile() {
   renderProfile(null);
 }
@@ -101,7 +101,7 @@ async function loadProfile() {
     return;
   }
 
-  // any other failure: show an error but keep the (empty) profile visible.
+  // other failures: show an error, keep the profile.
   if (!result.ok) {
     showError('Could not load profile data. Please try again.');
     renderFallbackProfile();

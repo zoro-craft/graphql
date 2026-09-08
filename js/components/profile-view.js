@@ -14,11 +14,7 @@ function identificationRow(termText, valueText) {
   });
 }
 
-// total xp is a raw byte count; keep the dash when missing.
-function formatXp(value) {
-  return value === '-' ? '-' : formatXP(value);
-}
-
+// total xp is a raw byte count; formatXP adds the dash.
 function renderIdentification(container, data) {
   container.textContent = '';
 
@@ -36,7 +32,7 @@ function renderIdentification(container, data) {
     children: [
       identificationRow('Username', data.username),
       identificationRow('Cohort', data.cohort),
-      identificationRow('Total XP', formatXp(data.totalXp)),
+      identificationRow('Total XP', formatXP(data.totalXp)),
       identificationRow('Level', data.level),
       identificationRow('Audit ratio', formatRatio(data.auditRatio))
     ]

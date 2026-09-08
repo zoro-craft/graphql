@@ -1,7 +1,7 @@
 import { graphql } from './graphql.js';
 import { projectName, safeValue } from '../utils/format.js';
 
-// everything the profile screen needs, fetched in a single request.
+// everything the profile screen needs, in one request.
 const PROFILE_QUERY = `
 {
   user {
@@ -54,12 +54,12 @@ export async function fetchProfile() {
     return result;
   }
 
-  // the profile is the first (and only) row in the "user" collection.
+  // the first (and only) row in the "user" collection.
   const user = result.data?.user?.[0] ?? null;
   return { ok: true, user: user };
 }
 
-// read an aggregate number (sum/max) from a graphql aggregate node.
+// read an aggregate number (sum/max).
 function aggregateValue(aggregateNode, key) {
   const amount = aggregateNode?.aggregate?.[key]?.amount;
   if (typeof amount === 'number' && Number.isFinite(amount)) {
@@ -77,7 +77,7 @@ function aggregateCount(aggregateNode) {
   return undefined;
 }
 
-// find the first non-empty cohort label across the user's events.
+// find the first non-empty cohort label.
 function firstCohortLabel(cohortNumber) {
   if (!Array.isArray(cohortNumber)) return undefined;
   for (const event of cohortNumber) {
@@ -106,13 +106,9 @@ export function mapIdentification(user) {
     photo = safeValue(user.avatarUrl);
     cohort = safeValue(firstCohortLabel(user.cohort_number));
     level = safeValue(aggregateValue(user.level, 'max'));
+    auditRatio = safeValue(user.auditRatio);
 
-    const ratio = user.auditRatio;
-    if (typeof ratio === 'number' && Number.isFinite(ratio)) {
-      auditRatio = ratio;
-    }
-
-    // total xp is kept in raw bytes; formatting happens at render time.
+    // total xp is raw bytes; formatting happens at render time.
     const xp = aggregateValue(user.xp, 'sum');
     if (xp !== undefined) {
       totalXp = xp;
@@ -131,14 +127,14 @@ export function mapDonut(user) {
     failed = aggregateCount(user.failed_audits);
   }
 
-  // only build segments when the api returned at least one count.
+  // only build segments when a count was returned.
   const hasData = succeeded !== undefined || failed !== undefined;
   const segments = hasData
     ? [
         { label: 'succeeded', value: succeeded || 0 },
         { label: 'failed', value: failed || 0 }
       ]
-    : [];
+    : []; 
 
   return { segments };
 }

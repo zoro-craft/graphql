@@ -1,6 +1,6 @@
-// format xp bytes into a readable value with a kb or mb unit.
+// format xp bytes into a readable kb/mb value.
 export function formatXP(bytes) {
-  if (typeof bytes !== 'number' || !Number.isFinite(bytes)) return undefined;
+  if (typeof bytes !== 'number' || !Number.isFinite(bytes)) return '-';
 
   const kb = bytes / 1000;
   if (kb > 1000) {
@@ -18,7 +18,7 @@ export function formatRatio(value) {
   return (Math.round(value * 10) / 10).toFixed(1);
 }
 
-// last segment of a project path, used as the project's display name.
+// last path segment, used as the project name.
 export function projectName(path) {
   if (typeof path !== 'string' || path === '') return undefined;
   const segments = path.split('/');

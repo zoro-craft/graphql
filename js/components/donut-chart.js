@@ -15,7 +15,7 @@ function legendItem(label, value, percentage, swatchClass) {
   });
 }
 
-// percentage of the total, rounded to one decimal, shown in the legend.
+// percentage of the total, for the legend.
 function percentOf(share, total) {
   return Math.round((share / total) * 1000) / 10;
 }
@@ -35,7 +35,7 @@ export function renderDonut(container, data) {
   const succeeded = segments[0].value || 0;
   const failed = segments[1].value || 0;
 
-  // pathLength="100" treats the outline as 100 units, so dasharray becomes a plain percentage and no circumference (2*pi*r) is needed.
+  // pathLength=100 makes dasharray values plain percentages.
   const succeededPercent = (succeeded / total) * 100;
 
   const svg = svgElement('svg', {
@@ -45,7 +45,7 @@ export function renderDonut(container, data) {
     'aria-label': 'Audit results: ' + succeeded + ' succeeded, ' + failed + ' failed'
   });
 
-  // each ring is a stroked circle around the same centre; the failed ring is a full circle drawn first and the succeeded ring sits on top with a gap, so "failed" only shows through that gap.
+  // full failed ring underneath; succeeded ring leaves a gap.
   svg.append(
     svgElement('circle', {
       class: 'donut-ring donut-ring-failed',
@@ -64,9 +64,9 @@ export function renderDonut(container, data) {
       fill: 'none',
       'stroke-width': 36,
       pathLength: 100,
-      // dash = the succeeded share of the outline, gap = the rest, so the failed ring shows through exactly where audits failed.
+      // dash = succeeded share, gap = the rest.
       'stroke-dasharray': succeededPercent + ' ' + (100 - succeededPercent),
-      // rotate the start point so the arc begins at 12 o'clock instead of the svg default (3 o'clock).
+      // rotate so the arc starts at 12 o'clock.
       transform: 'rotate(-90 100 100)'
     })
   );

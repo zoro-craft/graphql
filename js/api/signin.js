@@ -2,7 +2,7 @@ import { clearToken } from '../utils/token.js';
 
 const SIGNIN_URL = 'https://learn.zone01oujda.ma/api/auth/signin';
 
-// base64-encode a string as utf-8 so non-latin characters work.
+// base64-encode a string as utf-8.
 function toBase64(value) {
   const bytes = new TextEncoder().encode(value);
   let binary = '';
@@ -36,7 +36,7 @@ export async function signin(identifier, password) {
     return { ok: false, reason: 'invalid' };
   }
 
-  // the token is returned as a quoted string; strip the quotes.
+  // strip the quotes around the returned token.
   let token = (await response.text()).trim();
   if (token[0] === '"' && token[token.length - 1] === '"') {
     token = token.slice(1, -1);
