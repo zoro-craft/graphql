@@ -1,0 +1,23 @@
+name: graphql
+
+services:
+  graphql:
+    build: .
+    # AMD/x86_64 image.
+    image: elmehdirezoug/graphql:1.0.0
+    # For ARM/arm64 machines use: elmehdirezoug/graphql-arm:1.0.0
+    container_name: graphql
+    restart: unless-stopped
+    ports:
+      - "8090:8080"
+
+    # Security hardening
+    user: "101:101"
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
